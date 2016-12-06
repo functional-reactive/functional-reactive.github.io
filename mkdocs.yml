@@ -1,0 +1,11 @@
+site_name: Functional Reactive with Java
+site_url: http://www.functional-reactive.org
+repo_url: https://github.com/functional-reactive/functional-reactive.github.io.git
+##repo_name: GitHub
+site_author: Sven Ruppert
+google_analytics: ['UA-88569541-1', 'Functional-Reactive']
+
+theme: readthedocs
+markdown_extensions:
+    - toc:
+        permalink: True
