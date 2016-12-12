@@ -83,6 +83,11 @@
         
             <ul>
             
+                <li class="toctree-l3"><a href="#functional-java">Functional - Java</a></li>
+                
+                    <li><a class="toctree-l4" href="#memoizing-functions">Memoizing Functions</a></li>
+                
+            
             </ul>
         
     </li>
@@ -137,7 +142,232 @@
           <div role="main">
             <div class="section">
               
-                
+                <h2 id="functional-java">Functional - Java<a class="headerlink" href="#functional-java" title="Permanent link">&para;</a></h2>
+<h3 id="memoizing-functions">Memoizing Functions<a class="headerlink" href="#memoizing-functions" title="Permanent link">&para;</a></h3>
+<p>A Function is memoizing if the function will ever give the same result for the same input.
+And here we mean, exactly the same result. Let´s say the result will be an instance of a car.
+The result for the same input would give back the instance of the car. Not only an equal one.</p>
+<p>But let´s start with the beginning.</p>
+<p>AS starting point I will use the following function. </p>
+<pre><code class="java">  private static final Function&lt;Integer, Integer&gt; squareFunction = x -&gt; {
+    System.out.println(&quot;In function&quot;);
+    return x * x;
+  };
+</code></pre>
+
+<p>Here I am using the System.out only to show on command line how often this method was invoked. 
+I know that this is nothing for production!</p>
+<p>If I call this function twice with the same input, the System.out would be on screen two times. So let´s define 
+a memoized function.</p>
+<pre><code class="java">public static final Function&lt;Integer, Integer&gt; memoizationFunction = Memoizer.memoize(squareFunction);
+</code></pre>
+
+<p>Now I want to have the System.out only on time on screen, expacting that the result was calculated one time.
+What we have to do, to get the result?
+This work is based on the orig article I found 
+on <a href="https://dzone.com/articles/java-8-automatic-memoization">DZONE - Java8 Automatic Memoization</a></p>
+<p>The solution here is based on the method (class Map) introduced with Java8.
+Since Java8 you could provide a Lambda to calculate a value corresponding to a key, if the value is not available.
+This means, if you request a key/value pair the first time, the lambda will be executed to create the value.
+At the same time it ist stored in the map. For our solution the ``ConcurrentHashMap``` is used.</p>
+<pre><code class="java">public class Memoizer&lt;T, U&gt; {
+  private final Map&lt;T, U&gt; memoizationCache = new ConcurrentHashMap&lt;&gt;();
+
+  private Function&lt;T, U&gt; doMemoize(final Function&lt;T, U&gt; function) {
+    return input -&gt; memoizationCache.computeIfAbsent(input, function);
+  }
+
+  public static &lt;T, U&gt; Function&lt;T, U&gt; memoize(final Function&lt;T, U&gt; function) {
+    return new Memoizer&lt;T, U&gt;().doMemoize(function);
+  }
+}
+</code></pre>
+
+<p>And now we have the first version, but only for <code>Function&lt;T,U&gt;</code>.
+But what could we do with a <code>BiFunction&lt;T1,T2, R&gt;</code>?</p>
+<p>Let´s play around with the Function itself. We could transform am <code>BiFunction&lt;T1,T2,R&gt;</code> </p>
+<pre><code class="java">private static final BiFunction&lt;Integer,Integer,Integer&gt; biFunction = (x,y) -&gt; x * y;
+</code></pre>
+
+<p>into a <code>Function&lt;T1,Function&lt;T2,R&gt;&gt;</code>.</p>
+<pre><code class="java">private static final Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt; biFunction = x -&gt; y -&gt; x * y;
+</code></pre>
+
+<p>With this we are able to build a memoized function again. This would end up in the first version like the following.</p>
+<pre><code class="java">  public static final Function&lt;Integer, Function&lt;Integer,Integer&gt;&gt; memoizationFunction
+      = Memoizer.memoize(x -&gt; Memoizer.memoize(y -&gt; x * y));
+</code></pre>
+
+<p>So far so good, but the usage itself is not nice. First is the transformation into the Function of a Function instead of using the 
+original BiFunction, and the second is the usage of the memoized Function itself.</p>
+<pre><code class="java">  public static void main(String[] args) {
+    System.out.println(&quot;memoizationFunction = &quot; + memoizationFunction.apply(2).apply(3));
+    System.out.println(&quot;memoizationFunction = &quot; + memoizationFunction.apply(2).apply(3));
+  }
+</code></pre>
+
+<p>Now we could use the orig BiFunction inside the memoized Function.</p>
+<pre><code class="java">  public static BiFunction&lt;Integer,Integer,Integer&gt; mul = (x, y) -&gt; x*y;
+
+  public static final Function&lt;Integer, Function&lt;Integer,Integer&gt;&gt; memoizationFunction
+      = Memoizer.memoize(x -&gt; Memoizer.memoize(y -&gt; mul.apply(x,y)));
+</code></pre>
+
+<p>With this we could make it a little bit more comfortable and provide a create method.
+The biggest change here is the introduction of a <code>Supplier&lt;Integer&gt;</code>.
+So we changed the BiFunction into <code>BiFunction&lt;Integer, Integer, Supplier&lt;Integer&gt;&gt;</code>.
+Now we could use the method create with a lambda expression as argument to get a memoized Function.
+But still the result is <code>Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt;</code></p>
+<pre><code class="java">  public static Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt; create(
+      BiFunction&lt;Integer, Integer, Supplier&lt;Integer&gt;&gt; biFuncSupplier) {
+    return Memoizer.memoize(x -&gt; Memoizer.memoize(y -&gt; biFuncSupplier.apply(x, y).get()));
+  }
+
+  public static void main(String[] args) {
+    final Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt; function = create((x, y) -&gt; () -&gt; {
+      System.out.println(&quot;execute x/y = &quot; + x + &quot; / &quot; + y);
+      return x * y;
+    });
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2).apply(3));
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2).apply(3));
+  }
+</code></pre>
+
+<p>But we don´t want to transform the orig BiFunction. The transformation could be done 
+in a generic way. </p>
+<pre><code class="java">  public static Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt; transform(
+      final BiFunction&lt;Integer, Integer, Integer&gt; biFunc) {
+    return create((x, y) -&gt; () -&gt; biFunc.apply(x, y));
+  }
+
+  private static Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt; create(
+      BiFunction&lt;Integer, Integer, Supplier&lt;Integer&gt;&gt; biFuncSupplier) {
+    return Memoizer.memoize(x -&gt; Memoizer.memoize(y -&gt; biFuncSupplier.apply(x, y).get()));
+  }
+
+  public static void main(String[] args) {
+    final Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt; function = transform((x, y) -&gt; {
+      System.out.println(&quot;execute x/y = &quot; + x + &quot; / &quot; + y);
+      return x * y;
+    });
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2).apply(3));
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2).apply(3));
+  }
+</code></pre>
+
+<p>Or if you want to remove the types with generics....</p>
+<pre><code class="java">  public static &lt;T1, T2, R&gt; Function&lt;T1, Function&lt;T2, R&gt;&gt; transform(
+      final BiFunction&lt;T1, T2, R&gt; biFunc) {
+    return create((x, y) -&gt; () -&gt; biFunc.apply(x, y));
+  }
+
+  private static &lt;T1, T2, R&gt; Function&lt;T1, Function&lt;T2, R&gt;&gt; create(
+      BiFunction&lt;T1, T2, Supplier&lt;R&gt;&gt; biFuncSupplier) {
+    return Memoizer.memoize(x -&gt; Memoizer.memoize(y -&gt; biFuncSupplier.apply(x, y).get()));
+  }
+
+  public static void main(String[] args) {
+    final Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt; function = transform((x, y) -&gt; {
+      System.out.println(&quot;execute x/y = &quot; + x + &quot; / &quot; + y);
+      return x * y;
+    });
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2).apply(3));
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2).apply(3));
+  }
+</code></pre>
+
+<p>Now we are able to transform the <code>BiFunction&lt;T1, T2, R&gt;</code>, but the result is a <code>Function&lt;T1, Function&lt;T2, R&gt;&gt;</code>
+This is not nice to use, so we want to transform it back to a <code>BiFunction&lt;T1, T2, R&gt;</code>.</p>
+<pre><code class="java">  public static &lt;T1, T2, R&gt; BiFunction&lt;T1, T2, R&gt; prepare(
+      final Function&lt;T1, Function&lt;T2, R&gt;&gt; transformed) {
+    return (x, y) -&gt; transformed.apply(x).apply(y);
+  }
+</code></pre>
+
+<p>Finally we are able to transform in both directions.
+<code>BiFunction&lt;T1, T2, R&gt;</code> -&gt; <code>Function&lt;T1, Function&lt;T2, R&gt;&gt;</code> -&gt; <code>BiFunction&lt;T1, T2, R&gt;</code>.</p>
+<p>All together is now </p>
+<pre><code class="java">public static &lt;T1, T2, R&gt; BiFunction&lt;T1, T2, R&gt; prepare(
+      final Function&lt;T1, Function&lt;T2, R&gt;&gt; transformed) {
+    return (x, y) -&gt; transformed.apply(x).apply(y);
+  }
+
+  public static &lt;T1, T2, R&gt; Function&lt;T1, Function&lt;T2, R&gt;&gt; transform(
+      final BiFunction&lt;T1, T2, R&gt; biFunc) {
+    return create((x, y) -&gt; () -&gt; biFunc.apply(x, y));
+  }
+
+  private static &lt;T1, T2, R&gt; Function&lt;T1, Function&lt;T2, R&gt;&gt; create(
+      BiFunction&lt;T1, T2, Supplier&lt;R&gt;&gt; biFuncSupplier) {
+    return Memoizer.memoize(x -&gt; Memoizer.memoize(y -&gt; biFuncSupplier.apply(x, y).get()));
+  }
+
+  public static void main(String[] args) {
+    final Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt; function = transform((x, y) -&gt; {
+      System.out.println(&quot;execute x/y = &quot; + x + &quot; / &quot; + y);
+      return x * y;
+    });
+
+    System.out.println(&quot;memoizationFunction = &quot; + prepare(function).apply(2,3));
+    System.out.println(&quot;memoizationFunction = &quot; + prepare(function).apply(2,3));
+  }
+</code></pre>
+
+<p>After we found out how to transform in small steps, we are able to merge all together in a smaller 
+method. The result looks like the following.</p>
+<pre><code class="java">  public static &lt;T1, T2, R&gt; BiFunction&lt;T1, T2, R&gt; memoize(final BiFunction&lt;T1, T2, R&gt; biFunc) {
+    final BiFunction&lt;T1, T2, Supplier&lt;R&gt;&gt; biFuncSupplier = (x, y) -&gt; () -&gt; biFunc.apply(x, y);
+    final Function&lt;T1, Function&lt;T2, R&gt;&gt; transformed = Memoizer.memoize(x -&gt; Memoizer.memoize(y -&gt; biFuncSupplier.apply(x, y).get()));
+    return (x, y) -&gt; transformed.apply(x).apply(y);
+  }
+
+  public static void main(String[] args) {
+    final BiFunction&lt;Integer, Integer, Integer&gt; function = memoize((x, y) -&gt; {
+      System.out.println(&quot;execute x/y = &quot; + x + &quot; / &quot; + y);
+      return x * y;
+    });
+
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2,3));
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2,3));
+  }
+</code></pre>
+
+<p>The step now to a NFunction is not so far..  let´s see how we could do it with 
+three params. The first thing we have to create is a <code>TriFunction&lt;T1,T2,T3,R&gt;</code>, because it is not part of the JDK until now.</p>
+<pre><code class="java">  @FunctionalInterface
+  public interface TriFunction&lt;T1, T2,T3, R&gt; {
+    R apply(T1 t1, T2 t2, T3 t3);
+
+    default &lt;V&gt; TriFunction&lt;T1, T2,T3, V&gt; andThen(Function&lt;? super R, ? extends V&gt; after) {
+      Objects.requireNonNull(after);
+      return (T1 t1, T2 t2, T3 t3) -&gt; after.apply(apply(t1, t2, t3));
+    }
+  }
+</code></pre>
+
+<p>And finally the memoize looks like....</p>
+<pre><code class="java">  public static &lt;T1, T2,T3, R&gt; TriFunction&lt;T1, T2,T3, R&gt; memoize(final TriFunction&lt;T1, T2,T3, R&gt; threeFunc) {
+    final TriFunction&lt;T1, T2,T3, Supplier&lt;R&gt;&gt; threeFuncSupplier = (x, y, z) -&gt; () -&gt; threeFunc.apply(x, y,z);
+    final Function&lt;T1, Function&lt;T2, Function&lt;T3, R&gt;&gt;&gt; transformed
+        = Memoizer.memoize(
+            x -&gt; Memoizer.memoize(
+                y -&gt; Memoizer.memoize(
+                    z -&gt; threeFuncSupplier.apply(x, y,z).get())));
+    return (x, y, z) -&gt; transformed.apply(x).apply(y).apply(z);
+  }
+
+  public static void main(String[] args) {
+    final TriFunction&lt;Integer, Integer, Integer, Integer&gt; function = memoize((x, y, z) -&gt; {
+      System.out.println(&quot;execute x/y/z = &quot; + x + &quot; / &quot; + y + &quot; / &quot; + z);
+      return x * y * z;
+    });
+
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2,3,-1));
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2,3,-1));
+  }
+</code></pre>
+
+<p>So, now we have everything for a NFunction together ;-)</p>
               
             </div>
           </div>
