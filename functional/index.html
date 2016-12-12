@@ -149,7 +149,7 @@ And here we mean, exactly the same result. Let´s say the result will be an inst
 The result for the same input would give back the instance of the car. Not only an equal one.</p>
 <p>But let´s start with the beginning.</p>
 <p>AS starting point I will use the following function. </p>
-<pre><code class="java">  private static final Function&lt;Integer, Integer&gt; squareFunction = x -&gt; {
+<pre><code class="java">Function&lt;Integer, Integer&gt; squareFunction = x -&gt; {
     System.out.println(&quot;In function&quot;);
     return x * x;
   };
@@ -159,7 +159,7 @@ The result for the same input would give back the instance of the car. Not only 
 I know that this is nothing for production!</p>
 <p>If I call this function twice with the same input, the System.out would be on screen two times. So let´s define 
 a memoized function.</p>
-<pre><code class="java">public static final Function&lt;Integer, Integer&gt; memoizationFunction = Memoizer.memoize(squareFunction);
+<pre><code class="java">Function&lt;Integer, Integer&gt; memoizationFunction = Memoizer.memoize(squareFunction);
 </code></pre>
 
 <p>Now I want to have the System.out only on time on screen, expacting that the result was calculated one time.
@@ -186,15 +186,15 @@ At the same time it ist stored in the map. For our solution the ``ConcurrentHash
 <p>And now we have the first version, but only for <code>Function&lt;T,U&gt;</code>.
 But what could we do with a <code>BiFunction&lt;T1,T2, R&gt;</code>?</p>
 <p>Let´s play around with the Function itself. We could transform am <code>BiFunction&lt;T1,T2,R&gt;</code> </p>
-<pre><code class="java">private static final BiFunction&lt;Integer,Integer,Integer&gt; biFunction = (x,y) -&gt; x * y;
+<pre><code class="java">BiFunction&lt;Integer,Integer,Integer&gt; biFunction = (x,y) -&gt; x * y;
 </code></pre>
 
 <p>into a <code>Function&lt;T1,Function&lt;T2,R&gt;&gt;</code>.</p>
-<pre><code class="java">private static final Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt; biFunction = x -&gt; y -&gt; x * y;
+<pre><code class="java">Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt; biFunction = x -&gt; y -&gt; x * y;
 </code></pre>
 
 <p>With this we are able to build a memoized function again. This would end up in the first version like the following.</p>
-<pre><code class="java">  public static final Function&lt;Integer, Function&lt;Integer,Integer&gt;&gt; memoizationFunction
+<pre><code class="java">Function&lt;Integer, Function&lt;Integer,Integer&gt;&gt; memoizationFunction
       = Memoizer.memoize(x -&gt; Memoizer.memoize(y -&gt; x * y));
 </code></pre>
 
@@ -207,10 +207,12 @@ original BiFunction, and the second is the usage of the memoized Function itself
 </code></pre>
 
 <p>Now we could use the orig BiFunction inside the memoized Function.</p>
-<pre><code class="java">  public static BiFunction&lt;Integer,Integer,Integer&gt; mul = (x, y) -&gt; x*y;
+<pre><code class="java">BiFunction&lt;Integer,Integer,Integer&gt; mul = (x, y) -&gt; x*y;
 
-  public static final Function&lt;Integer, Function&lt;Integer,Integer&gt;&gt; memoizationFunction
-      = Memoizer.memoize(x -&gt; Memoizer.memoize(y -&gt; mul.apply(x,y)));
+Function&lt;Integer, Function&lt;Integer,Integer&gt;&gt; memoizationFunction
+      = Memoizer.memoize(
+          x -&gt; Memoizer.memoize(
+              y -&gt; mul.apply(x,y)));
 </code></pre>
 
 <p>With this we could make it a little bit more comfortable and provide a create method.
@@ -242,7 +244,9 @@ in a generic way. </p>
 
   private static Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt; create(
       BiFunction&lt;Integer, Integer, Supplier&lt;Integer&gt;&gt; biFuncSupplier) {
-    return Memoizer.memoize(x -&gt; Memoizer.memoize(y -&gt; biFuncSupplier.apply(x, y).get()));
+    return Memoizer.memoize(
+        x -&gt; Memoizer.memoize(
+            y -&gt; biFuncSupplier.apply(x, y).get()));
   }
 
   public static void main(String[] args) {
@@ -299,7 +303,9 @@ This is not nice to use, so we want to transform it back to a <code>BiFunction&l
 
   private static &lt;T1, T2, R&gt; Function&lt;T1, Function&lt;T2, R&gt;&gt; create(
       BiFunction&lt;T1, T2, Supplier&lt;R&gt;&gt; biFuncSupplier) {
-    return Memoizer.memoize(x -&gt; Memoizer.memoize(y -&gt; biFuncSupplier.apply(x, y).get()));
+    return Memoizer.memoize(
+        x -&gt; Memoizer.memoize(
+            y -&gt; biFuncSupplier.apply(x, y).get()));
   }
 
   public static void main(String[] args) {
@@ -317,7 +323,10 @@ This is not nice to use, so we want to transform it back to a <code>BiFunction&l
 method. The result looks like the following.</p>
 <pre><code class="java">  public static &lt;T1, T2, R&gt; BiFunction&lt;T1, T2, R&gt; memoize(final BiFunction&lt;T1, T2, R&gt; biFunc) {
     final BiFunction&lt;T1, T2, Supplier&lt;R&gt;&gt; biFuncSupplier = (x, y) -&gt; () -&gt; biFunc.apply(x, y);
-    final Function&lt;T1, Function&lt;T2, R&gt;&gt; transformed = Memoizer.memoize(x -&gt; Memoizer.memoize(y -&gt; biFuncSupplier.apply(x, y).get()));
+    final Function&lt;T1, Function&lt;T2, R&gt;&gt; transformed 
+           = Memoizer.memoize(
+               x -&gt; Memoizer.memoize(
+                   y -&gt; biFuncSupplier.apply(x, y).get()));
     return (x, y) -&gt; transformed.apply(x).apply(y);
   }
 
@@ -347,7 +356,8 @@ three params. The first thing we have to create is a <code>TriFunction&lt;T1,T2,
 
 <p>And finally the memoize looks like....</p>
 <pre><code class="java">  public static &lt;T1, T2,T3, R&gt; TriFunction&lt;T1, T2,T3, R&gt; memoize(final TriFunction&lt;T1, T2,T3, R&gt; threeFunc) {
-    final TriFunction&lt;T1, T2,T3, Supplier&lt;R&gt;&gt; threeFuncSupplier = (x, y, z) -&gt; () -&gt; threeFunc.apply(x, y,z);
+    final TriFunction&lt;T1, T2,T3, Supplier&lt;R&gt;&gt; threeFuncSupplier 
+             = (x, y, z) -&gt; () -&gt; threeFunc.apply(x, y,z);
     final Function&lt;T1, Function&lt;T2, Function&lt;T3, R&gt;&gt;&gt; transformed
         = Memoizer.memoize(
             x -&gt; Memoizer.memoize(
