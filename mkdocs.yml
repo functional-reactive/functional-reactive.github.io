@@ -9,3 +9,10 @@ theme: readthedocs
 markdown_extensions:
     - toc:
         permalink: True
+pages:
+- Home: index.md
+- Core: core.md
+- Basics: basics.md
+- Functional: functional.md
+- Pattern: pattern.md
+- Reactive: reactive.md
