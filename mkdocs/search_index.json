@@ -9,6 +9,41 @@
             "location": "/#functional-reactive-with-core-java", 
             "text": "... we just started with this ... ;-)  if you can not wait..  check out some code..   Workshop - Functional Reactive", 
             "title": "Functional Reactive with Core Java"
+        }, 
+        {
+            "location": "/core/", 
+            "text": "Java Core Classes\n\n\nHere we are collectiong all the things that we need\nmore often during the examples. All this we are \nmissing in Core Java ;-)\n\n\nTupel , Tripel, Quad and Quint\n\n\nFrom timeto time we want to have classes like a Tuple or even more.\nHere are some of them up to Quint. Hopefully we could remove them soon\nand replace it with Core JDK Classes.\n\n\npublic class Tuple\nT1, T2\n {\n  private T1 t1;\n  private T2 t2;\n\n  public Tuple(final T1 t1, final T2 t2) {\n    this.t1 = t1;\n    this.t2 = t2;\n  }\n\n  public T1 getT1() {\n    return t1;\n  }\n\n  public T2 getT2() {\n    return t2;\n  }\n\n  @Override\n  public String toString() {\n    return \nTuple{\n +\n        \nt1=\n + t1 +\n        \n, t2=\n + t2 +\n        '}';\n  }\n\n  @Override\n  public boolean equals(final Object o) {\n    if (this == o) return true;\n    if (!(o instanceof Tuple)) return false;\n    final Tuple\n?, ?\n tuple = (Tuple\n?, ?\n) o;\n    return Objects.equals(t1, tuple.t1) \n\n        Objects.equals(t2, tuple.t2);\n  }\n\n  @Override\n  public int hashCode() {\n    return Objects.hash(t1, t2);\n  }\n}\n\n\n\n\nAll classes are build up like the Tuple.", 
+            "title": "Core"
+        }, 
+        {
+            "location": "/core/#java-core-classes", 
+            "text": "Here we are collectiong all the things that we need\nmore often during the examples. All this we are \nmissing in Core Java ;-)", 
+            "title": "Java Core Classes"
+        }, 
+        {
+            "location": "/core/#tupel-tripel-quad-and-quint", 
+            "text": "From timeto time we want to have classes like a Tuple or even more.\nHere are some of them up to Quint. Hopefully we could remove them soon\nand replace it with Core JDK Classes.  public class Tuple T1, T2  {\n  private T1 t1;\n  private T2 t2;\n\n  public Tuple(final T1 t1, final T2 t2) {\n    this.t1 = t1;\n    this.t2 = t2;\n  }\n\n  public T1 getT1() {\n    return t1;\n  }\n\n  public T2 getT2() {\n    return t2;\n  }\n\n  @Override\n  public String toString() {\n    return  Tuple{  +\n         t1=  + t1 +\n         , t2=  + t2 +\n        '}';\n  }\n\n  @Override\n  public boolean equals(final Object o) {\n    if (this == o) return true;\n    if (!(o instanceof Tuple)) return false;\n    final Tuple ?, ?  tuple = (Tuple ?, ? ) o;\n    return Objects.equals(t1, tuple.t1)  \n        Objects.equals(t2, tuple.t2);\n  }\n\n  @Override\n  public int hashCode() {\n    return Objects.hash(t1, t2);\n  }\n}  All classes are build up like the Tuple.", 
+            "title": "Tupel , Tripel, Quad and Quint"
+        }, 
+        {
+            "location": "/basics/", 
+            "text": "", 
+            "title": "Basics"
+        }, 
+        {
+            "location": "/functional/", 
+            "text": "", 
+            "title": "Functional"
+        }, 
+        {
+            "location": "/pattern/", 
+            "text": "", 
+            "title": "Pattern"
+        }, 
+        {
+            "location": "/reactive/", 
+            "text": "", 
+            "title": "Reactive"
         }
     ]
 }

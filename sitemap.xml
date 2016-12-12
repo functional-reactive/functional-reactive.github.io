@@ -4,7 +4,47 @@
     
     <url>
      <loc>http://www.functional-reactive.org/</loc>
-     <lastmod>2016-12-06</lastmod>
+     <lastmod>2016-12-12</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+    
+    <url>
+     <loc>http://www.functional-reactive.org/core/</loc>
+     <lastmod>2016-12-12</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+    
+    <url>
+     <loc>http://www.functional-reactive.org/basics/</loc>
+     <lastmod>2016-12-12</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+    
+    <url>
+     <loc>http://www.functional-reactive.org/functional/</loc>
+     <lastmod>2016-12-12</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+    
+    <url>
+     <loc>http://www.functional-reactive.org/pattern/</loc>
+     <lastmod>2016-12-12</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+    
+    <url>
+     <loc>http://www.functional-reactive.org/reactive/</loc>
+     <lastmod>2016-12-12</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
