@@ -10,7 +10,7 @@ But let´s start with the beginning.
 AS starting point I will use the following function. 
 
 ```java
-  private static final Function<Integer, Integer> squareFunction = x -> {
+Function<Integer, Integer> squareFunction = x -> {
     System.out.println("In function");
     return x * x;
   };
@@ -22,7 +22,7 @@ If I call this function twice with the same input, the System.out would be on sc
 a memoized function.
 
 ```java
-public static final Function<Integer, Integer> memoizationFunction = Memoizer.memoize(squareFunction);
+Function<Integer, Integer> memoizationFunction = Memoizer.memoize(squareFunction);
 ```
 
 Now I want to have the System.out only on time on screen, expacting that the result was calculated one time.
@@ -54,16 +54,16 @@ But what could we do with a ```BiFunction<T1,T2, R>```?
 Let´s play around with the Function itself. We could transform am ```BiFunction<T1,T2,R>``` 
 
 ```java
-private static final BiFunction<Integer,Integer,Integer> biFunction = (x,y) -> x * y;
+BiFunction<Integer,Integer,Integer> biFunction = (x,y) -> x * y;
 ```
 into a ```Function<T1,Function<T2,R>>```.
 ```java
-private static final Function<Integer, Function<Integer, Integer>> biFunction = x -> y -> x * y;
+Function<Integer, Function<Integer, Integer>> biFunction = x -> y -> x * y;
 ```
 With this we are able to build a memoized function again. This would end up in the first version like the following.
 
 ```java
-  public static final Function<Integer, Function<Integer,Integer>> memoizationFunction
+Function<Integer, Function<Integer,Integer>> memoizationFunction
       = Memoizer.memoize(x -> Memoizer.memoize(y -> x * y));
 ```
 So far so good, but the usage itself is not nice. First is the transformation into the Function of a Function instead of using the 
@@ -78,10 +78,12 @@ original BiFunction, and the second is the usage of the memoized Function itself
 Now we could use the orig BiFunction inside the memoized Function.
 
 ```java
-  public static BiFunction<Integer,Integer,Integer> mul = (x, y) -> x*y;
+BiFunction<Integer,Integer,Integer> mul = (x, y) -> x*y;
 
-  public static final Function<Integer, Function<Integer,Integer>> memoizationFunction
-      = Memoizer.memoize(x -> Memoizer.memoize(y -> mul.apply(x,y)));
+Function<Integer, Function<Integer,Integer>> memoizationFunction
+      = Memoizer.memoize(
+          x -> Memoizer.memoize(
+              y -> mul.apply(x,y)));
 ```
 
 With this we could make it a little bit more comfortable and provide a create method.
@@ -117,7 +119,9 @@ in a generic way.
 
   private static Function<Integer, Function<Integer, Integer>> create(
       BiFunction<Integer, Integer, Supplier<Integer>> biFuncSupplier) {
-    return Memoizer.memoize(x -> Memoizer.memoize(y -> biFuncSupplier.apply(x, y).get()));
+    return Memoizer.memoize(
+        x -> Memoizer.memoize(
+            y -> biFuncSupplier.apply(x, y).get()));
   }
 
   public static void main(String[] args) {
@@ -180,7 +184,9 @@ public static <T1, T2, R> BiFunction<T1, T2, R> prepare(
 
   private static <T1, T2, R> Function<T1, Function<T2, R>> create(
       BiFunction<T1, T2, Supplier<R>> biFuncSupplier) {
-    return Memoizer.memoize(x -> Memoizer.memoize(y -> biFuncSupplier.apply(x, y).get()));
+    return Memoizer.memoize(
+        x -> Memoizer.memoize(
+            y -> biFuncSupplier.apply(x, y).get()));
   }
 
   public static void main(String[] args) {
@@ -200,7 +206,10 @@ method. The result looks like the following.
 ```java
   public static <T1, T2, R> BiFunction<T1, T2, R> memoize(final BiFunction<T1, T2, R> biFunc) {
     final BiFunction<T1, T2, Supplier<R>> biFuncSupplier = (x, y) -> () -> biFunc.apply(x, y);
-    final Function<T1, Function<T2, R>> transformed = Memoizer.memoize(x -> Memoizer.memoize(y -> biFuncSupplier.apply(x, y).get()));
+    final Function<T1, Function<T2, R>> transformed 
+           = Memoizer.memoize(
+               x -> Memoizer.memoize(
+                   y -> biFuncSupplier.apply(x, y).get()));
     return (x, y) -> transformed.apply(x).apply(y);
   }
 
@@ -232,10 +241,10 @@ three params. The first thing we have to create is a ```TriFunction<T1,T2,T3,R>`
 
 And finally the memoize looks like....
 
-
 ```java
   public static <T1, T2,T3, R> TriFunction<T1, T2,T3, R> memoize(final TriFunction<T1, T2,T3, R> threeFunc) {
-    final TriFunction<T1, T2,T3, Supplier<R>> threeFuncSupplier = (x, y, z) -> () -> threeFunc.apply(x, y,z);
+    final TriFunction<T1, T2,T3, Supplier<R>> threeFuncSupplier 
+             = (x, y, z) -> () -> threeFunc.apply(x, y,z);
     final Function<T1, Function<T2, Function<T3, R>>> transformed
         = Memoizer.memoize(
             x -> Memoizer.memoize(
