@@ -8,7 +8,7 @@
   
   <meta name="author" content="Sven Ruppert">
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>Core - Functional Reactive with Java</title>
+  <title>Memoizing - Functional Reactive with Java</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -17,9 +17,9 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "Core";
-    var mkdocs_page_input_path = "core.md";
-    var mkdocs_page_url = "/core/";
+    var mkdocs_page_name = "Memoizing";
+    var mkdocs_page_input_path = "functional_result.md";
+    var mkdocs_page_url = "/functional_result/";
   </script>
   
   <script src="../js/jquery-2.1.1.min.js"></script>
@@ -62,21 +62,9 @@
     <a class="" href="..">Home</a>
 	    </li>
           
-            <li class="toctree-l1 current">
+            <li class="toctree-l1">
 		
-    <a class="current" href="./">Core</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l2"><a href="#java-core-classes">Java Core Classes</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l3" href="#pair-tripel-quad-and-quint">Pair , Tripel, Quad and Quint</a></li>
-        
-        </ul>
-    
-
-    </ul>
+    <a class="" href="../core/">Core</a>
 	    </li>
           
             <li class="toctree-l1">
@@ -89,9 +77,23 @@
     <a class="" href="../functional/">Functional</a>
 	    </li>
           
-            <li class="toctree-l1">
+            <li class="toctree-l1 current">
 		
-    <a class="" href="../functional_result/">Memoizing</a>
+    <a class="current" href="./">Memoizing</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l2"><a href="#functional-result-the-tuned-optional">Functional - Result the tuned Optional</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l3" href="#optional">Optional</a></li>
+        
+            <li><a class="toctree-l3" href="#result">Result</a></li>
+        
+        </ul>
+    
+
+    </ul>
 	    </li>
           
             <li class="toctree-l1">
@@ -131,10 +133,10 @@
     
       
     
-    <li>Core</li>
+    <li>Memoizing</li>
     <li class="wy-breadcrumbs-aside">
       
-        <a href="https://github.com/functional-reactive/functional-reactive.github.io.git/edit/master/docs/core.md"
+        <a href="https://github.com/functional-reactive/functional-reactive.github.io.git/edit/master/docs/functional_result.md"
           class="icon icon-github"> Edit on GitHub</a>
       
     </li>
@@ -144,56 +146,11 @@
           <div role="main">
             <div class="section">
               
-                <h2 id="java-core-classes">Java Core Classes<a class="headerlink" href="#java-core-classes" title="Permanent link">&para;</a></h2>
-<p>Here we are collectiong all the things that we need
-more often during the examples. All this we are 
-missing in Core Java ;-)</p>
-<h3 id="pair-tripel-quad-and-quint">Pair , Tripel, Quad and Quint<a class="headerlink" href="#pair-tripel-quad-and-quint" title="Permanent link">&para;</a></h3>
-<p>From time to time we want to have classes like a Tuple or even more.
-Here are some of them up to Quint. Hopefully we could remove them soon
-and replace it with Core JDK Classes.</p>
-<pre><code class="java">public class Pair&lt;T1, T2&gt; {
-  private T1 t1;
-  private T2 t2;
-
-  public Pair(final T1 t1, final T2 t2) {
-    this.t1 = t1;
-    this.t2 = t2;
-  }
-
-  public T1 getT1() {
-    return t1;
-  }
-
-  public T2 getT2() {
-    return t2;
-  }
-
-  @Override
-  public String toString() {
-    return &quot;Pair{&quot; +
-        &quot;t1=&quot; + t1 +
-        &quot;, t2=&quot; + t2 +
-        '}';
-  }
-
-  @Override
-  public boolean equals(final Object o) {
-    if (this == o) return true;
-    if (!(o instanceof Pair)) return false;
-    final Pair&lt;?, ?&gt; pair = (Pair&lt;?, ?&gt;) o;
-    return Objects.equals(t1, pair.t1) &amp;&amp;
-        Objects.equals(t2, pair.t2);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(t1, t2);
-  }
-}
-</code></pre>
-
-<p>All classes are build up like the Pair. </p>
+                <h2 id="functional-result-the-tuned-optional">Functional - Result the tuned Optional<a class="headerlink" href="#functional-result-the-tuned-optional" title="Permanent link">&para;</a></h2>
+<h3 id="optional">Optional<a class="headerlink" href="#optional" title="Permanent link">&para;</a></h3>
+<h4 id="how-to-use-it">How to use it<a class="headerlink" href="#how-to-use-it" title="Permanent link">&para;</a></h4>
+<h4 id="update-with-java9">update with Java9<a class="headerlink" href="#update-with-java9" title="Permanent link">&para;</a></h4>
+<h3 id="result">Result<a class="headerlink" href="#result" title="Permanent link">&para;</a></h3>
               
             </div>
           </div>
@@ -201,10 +158,10 @@ and replace it with Core JDK Classes.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../basics/" class="btn btn-neutral float-right" title="Basics">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../functional_memoizing/" class="btn btn-neutral float-right" title="Memoizing">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href=".." class="btn btn-neutral" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../functional/" class="btn btn-neutral" title="Functional"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -232,10 +189,10 @@ and replace it with Core JDK Classes.</p>
           <a href="https://github.com/functional-reactive/functional-reactive.github.io.git" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
       
       
-        <span><a href=".." style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../functional/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../basics/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../functional_memoizing/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

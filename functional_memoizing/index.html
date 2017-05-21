@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta name="author" content="Sven Ruppert">
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Memoizing - Functional Reactive with Java</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../css/highlight.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Memoizing";
+    var mkdocs_page_input_path = "functional_memoizing.md";
+    var mkdocs_page_url = "/functional_memoizing/";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js"></script>
+  <script src="../js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="../js/highlight.pack.js"></script> 
+  
+  <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-88569541-1', 'Functional-Reactive');
+      ga('send', 'pageview');
+  </script>
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> Functional Reactive with Java</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="..">Home</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../core/">Core</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../basics/">Basics</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../functional/">Functional</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../functional_result/">Memoizing</a>
+	    </li>
+          
+            <li class="toctree-l1 current">
+		
+    <a class="current" href="./">Memoizing</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l2"><a href="#functional-memoizing-functions">Functional - Memoizing Functions</a></li>
+    
+
+    </ul>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../pattern/">Pattern</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../reactive/">Reactive</a>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">Functional Reactive with Java</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Memoizing</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/functional-reactive/functional-reactive.github.io.git/edit/master/docs/functional_memoizing.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h2 id="functional-memoizing-functions">Functional - Memoizing Functions<a class="headerlink" href="#functional-memoizing-functions" title="Permanent link">&para;</a></h2>
+<p>A Function is memoizing if the function will ever give the same result for the same input.
+And here we mean, exactly the same result. Let´s say the result will be an instance of a car.
+The result for the same input would give back the instance of the car. Not only an equal one.</p>
+<p>But let´s start with the beginning.</p>
+<p>AS starting point I will use the following function. </p>
+<pre><code class="java">Function&lt;Integer, Integer&gt; squareFunction = x -&gt; {
+    System.out.println(&quot;In function&quot;);
+    return x * x;
+  };
+</code></pre>
+
+<p>Here I am using the System.out only to show on command line how often this method was invoked. 
+I know that this is nothing for production!</p>
+<p>If I call this function twice with the same input, the System.out would be on screen two times. So let´s define 
+a memoized function.</p>
+<pre><code class="java">Function&lt;Integer, Integer&gt; memoizationFunction = Memoizer.memoize(squareFunction);
+</code></pre>
+
+<p>Now I want to have the System.out only on time on screen, expacting that the result was calculated one time.
+What we have to do, to get the result?
+This work is based on the orig article I found 
+on <a href="https://dzone.com/articles/java-8-automatic-memoization">DZONE - Java8 Automatic Memoization</a></p>
+<p>The solution here is based on the method (class Map) introduced with Java8.
+Since Java8 you could provide a Lambda to calculate a value corresponding to a key, if the value is not available.
+This means, if you request a key/value pair the first time, the lambda will be executed to create the value.
+At the same time it ist stored in the map. For our solution the ``ConcurrentHashMap``` is used.</p>
+<pre><code class="java">public class Memoizer&lt;T, U&gt; {
+  private final Map&lt;T, U&gt; memoizationCache = new ConcurrentHashMap&lt;&gt;();
+
+  private Function&lt;T, U&gt; doMemoize(final Function&lt;T, U&gt; function) {
+    return input -&gt; memoizationCache.computeIfAbsent(input, function);
+  }
+
+  public static &lt;T, U&gt; Function&lt;T, U&gt; memoize(final Function&lt;T, U&gt; function) {
+    return new Memoizer&lt;T, U&gt;().doMemoize(function);
+  }
+}
+</code></pre>
+
+<p>And now we have the first version, but only for <code>Function&lt;T,U&gt;</code>.
+But what could we do with a <code>BiFunction&lt;T1,T2, R&gt;</code>?</p>
+<p>Let´s play around with the Function itself. We could transform am <code>BiFunction&lt;T1,T2,R&gt;</code> </p>
+<pre><code class="java">BiFunction&lt;Integer,Integer,Integer&gt; biFunction = (x,y) -&gt; x * y;
+</code></pre>
+
+<p>into a <code>Function&lt;T1,Function&lt;T2,R&gt;&gt;</code>.</p>
+<pre><code class="java">Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt; biFunction = x -&gt; y -&gt; x * y;
+</code></pre>
+
+<p>With this we are able to build a memoized function again. This would end up in the first version like the following.</p>
+<pre><code class="java">Function&lt;Integer, Function&lt;Integer,Integer&gt;&gt; memoizationFunction
+      = Memoizer.memoize(x -&gt; Memoizer.memoize(y -&gt; x * y));
+</code></pre>
+
+<p>So far so good, but the usage itself is not nice. First is the transformation into the Function of a Function instead of using the 
+original BiFunction, and the second is the usage of the memoized Function itself.</p>
+<pre><code class="java">  public static void main(String[] args) {
+    System.out.println(&quot;memoizationFunction = &quot; + memoizationFunction.apply(2).apply(3));
+    System.out.println(&quot;memoizationFunction = &quot; + memoizationFunction.apply(2).apply(3));
+  }
+</code></pre>
+
+<p>Now we could use the orig BiFunction inside the memoized Function.</p>
+<pre><code class="java">BiFunction&lt;Integer,Integer,Integer&gt; mul = (x, y) -&gt; x*y;
+
+Function&lt;Integer, Function&lt;Integer,Integer&gt;&gt; memoizationFunction
+      = Memoizer.memoize(
+          x -&gt; Memoizer.memoize(
+              y -&gt; mul.apply(x,y)));
+</code></pre>
+
+<p>With this we could make it a little bit more comfortable and provide a create method.
+The biggest change here is the introduction of a <code>Supplier&lt;Integer&gt;</code>.
+So we changed the BiFunction into <code>BiFunction&lt;Integer, Integer, Supplier&lt;Integer&gt;&gt;</code>.
+Now we could use the method create with a lambda expression as argument to get a memoized Function.
+But still the result is <code>Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt;</code></p>
+<pre><code class="java">  public static Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt; create(
+      BiFunction&lt;Integer, Integer, Supplier&lt;Integer&gt;&gt; biFuncSupplier) {
+    return Memoizer.memoize(x -&gt; Memoizer.memoize(y -&gt; biFuncSupplier.apply(x, y).get()));
+  }
+
+  public static void main(String[] args) {
+    final Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt; function = create((x, y) -&gt; () -&gt; {
+      System.out.println(&quot;execute x/y = &quot; + x + &quot; / &quot; + y);
+      return x * y;
+    });
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2).apply(3));
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2).apply(3));
+  }
+</code></pre>
+
+<p>But we don´t want to transform the orig BiFunction. The transformation could be done 
+in a generic way. </p>
+<pre><code class="java">  public static Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt; transform(
+      final BiFunction&lt;Integer, Integer, Integer&gt; biFunc) {
+    return create((x, y) -&gt; () -&gt; biFunc.apply(x, y));
+  }
+
+  private static Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt; create(
+      BiFunction&lt;Integer, Integer, Supplier&lt;Integer&gt;&gt; biFuncSupplier) {
+    return Memoizer.memoize(
+        x -&gt; Memoizer.memoize(
+            y -&gt; biFuncSupplier.apply(x, y).get()));
+  }
+
+  public static void main(String[] args) {
+    final Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt; function = transform((x, y) -&gt; {
+      System.out.println(&quot;execute x/y = &quot; + x + &quot; / &quot; + y);
+      return x * y;
+    });
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2).apply(3));
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2).apply(3));
+  }
+</code></pre>
+
+<p>Or if you want to remove the types with generics....</p>
+<pre><code class="java">  public static &lt;T1, T2, R&gt; Function&lt;T1, Function&lt;T2, R&gt;&gt; transform(
+      final BiFunction&lt;T1, T2, R&gt; biFunc) {
+    return create((x, y) -&gt; () -&gt; biFunc.apply(x, y));
+  }
+
+  private static &lt;T1, T2, R&gt; Function&lt;T1, Function&lt;T2, R&gt;&gt; create(
+      BiFunction&lt;T1, T2, Supplier&lt;R&gt;&gt; biFuncSupplier) {
+    return Memoizer.memoize(x -&gt; Memoizer.memoize(y -&gt; biFuncSupplier.apply(x, y).get()));
+  }
+
+  public static void main(String[] args) {
+    final Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt; function = transform((x, y) -&gt; {
+      System.out.println(&quot;execute x/y = &quot; + x + &quot; / &quot; + y);
+      return x * y;
+    });
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2).apply(3));
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2).apply(3));
+  }
+</code></pre>
+
+<p>Now we are able to transform the <code>BiFunction&lt;T1, T2, R&gt;</code>, but the result is a <code>Function&lt;T1, Function&lt;T2, R&gt;&gt;</code>
+This is not nice to use, so we want to transform it back to a <code>BiFunction&lt;T1, T2, R&gt;</code>.</p>
+<pre><code class="java">  public static &lt;T1, T2, R&gt; BiFunction&lt;T1, T2, R&gt; prepare(
+      final Function&lt;T1, Function&lt;T2, R&gt;&gt; transformed) {
+    return (x, y) -&gt; transformed.apply(x).apply(y);
+  }
+</code></pre>
+
+<p>Finally we are able to transform in both directions.
+<code>BiFunction&lt;T1, T2, R&gt;</code> -&gt; <code>Function&lt;T1, Function&lt;T2, R&gt;&gt;</code> -&gt; <code>BiFunction&lt;T1, T2, R&gt;</code>.</p>
+<p>All together is now </p>
+<pre><code class="java">public static &lt;T1, T2, R&gt; BiFunction&lt;T1, T2, R&gt; prepare(
+      final Function&lt;T1, Function&lt;T2, R&gt;&gt; transformed) {
+    return (x, y) -&gt; transformed.apply(x).apply(y);
+  }
+
+  public static &lt;T1, T2, R&gt; Function&lt;T1, Function&lt;T2, R&gt;&gt; transform(
+      final BiFunction&lt;T1, T2, R&gt; biFunc) {
+    return create((x, y) -&gt; () -&gt; biFunc.apply(x, y));
+  }
+
+  private static &lt;T1, T2, R&gt; Function&lt;T1, Function&lt;T2, R&gt;&gt; create(
+      BiFunction&lt;T1, T2, Supplier&lt;R&gt;&gt; biFuncSupplier) {
+    return Memoizer.memoize(
+        x -&gt; Memoizer.memoize(
+            y -&gt; biFuncSupplier.apply(x, y).get()));
+  }
+
+  public static void main(String[] args) {
+    final Function&lt;Integer, Function&lt;Integer, Integer&gt;&gt; function = transform((x, y) -&gt; {
+      System.out.println(&quot;execute x/y = &quot; + x + &quot; / &quot; + y);
+      return x * y;
+    });
+
+    System.out.println(&quot;memoizationFunction = &quot; + prepare(function).apply(2,3));
+    System.out.println(&quot;memoizationFunction = &quot; + prepare(function).apply(2,3));
+  }
+</code></pre>
+
+<p>After we found out how to transform in small steps, we are able to merge all together in a smaller 
+method. The result looks like the following.</p>
+<pre><code class="java">  public static &lt;T1, T2, R&gt; BiFunction&lt;T1, T2, R&gt; memoize(final BiFunction&lt;T1, T2, R&gt; biFunc) {
+    final BiFunction&lt;T1, T2, Supplier&lt;R&gt;&gt; biFuncSupplier = (x, y) -&gt; () -&gt; biFunc.apply(x, y);
+    final Function&lt;T1, Function&lt;T2, R&gt;&gt; transformed 
+           = Memoizer.memoize(
+               x -&gt; Memoizer.memoize(
+                   y -&gt; biFuncSupplier.apply(x, y).get()));
+    return (x, y) -&gt; transformed.apply(x).apply(y);
+  }
+
+  public static void main(String[] args) {
+    final BiFunction&lt;Integer, Integer, Integer&gt; function = memoize((x, y) -&gt; {
+      System.out.println(&quot;execute x/y = &quot; + x + &quot; / &quot; + y);
+      return x * y;
+    });
+
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2,3));
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2,3));
+  }
+</code></pre>
+
+<p>The step now to a NFunction is not so far..  let´s see how we could do it with 
+three params. The first thing we have to create is a <code>TriFunction&lt;T1,T2,T3,R&gt;</code>, because it is not part of the JDK until now.</p>
+<pre><code class="java">  @FunctionalInterface
+  public interface TriFunction&lt;T1, T2,T3, R&gt; {
+    R apply(T1 t1, T2 t2, T3 t3);
+
+    default &lt;V&gt; TriFunction&lt;T1, T2,T3, V&gt; andThen(Function&lt;? super R, ? extends V&gt; after) {
+      Objects.requireNonNull(after);
+      return (T1 t1, T2 t2, T3 t3) -&gt; after.apply(apply(t1, t2, t3));
+    }
+  }
+</code></pre>
+
+<p>And finally the memoize looks like....</p>
+<pre><code class="java">  public static &lt;T1, T2,T3, R&gt; TriFunction&lt;T1, T2,T3, R&gt; memoize(final TriFunction&lt;T1, T2,T3, R&gt; threeFunc) {
+    final TriFunction&lt;T1, T2,T3, Supplier&lt;R&gt;&gt; threeFuncSupplier 
+             = (x, y, z) -&gt; () -&gt; threeFunc.apply(x, y,z);
+    final Function&lt;T1, Function&lt;T2, Function&lt;T3, R&gt;&gt;&gt; transformed
+        = Memoizer.memoize(
+            x -&gt; Memoizer.memoize(
+                y -&gt; Memoizer.memoize(
+                    z -&gt; threeFuncSupplier.apply(x, y,z).get())));
+    return (x, y, z) -&gt; transformed.apply(x).apply(y).apply(z);
+  }
+
+  public static void main(String[] args) {
+    final TriFunction&lt;Integer, Integer, Integer, Integer&gt; function = memoize((x, y, z) -&gt; {
+      System.out.println(&quot;execute x/y/z = &quot; + x + &quot; / &quot; + y + &quot; / &quot; + z);
+      return x * y * z;
+    });
+
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2,3,-1));
+    System.out.println(&quot;memoizationFunction = &quot; + function.apply(2,3,-1));
+  }
+</code></pre>
+
+<p>So, now we have everything for a NFunction together ;-)</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../pattern/" class="btn btn-neutral float-right" title="Pattern">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../functional_result/" class="btn btn-neutral" title="Memoizing"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+	  
+        </div>
+      </div>
+
+    </section>
+    
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/functional-reactive/functional-reactive.github.io.git" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../functional_result/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../pattern/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script src="../js/theme.js"></script>
+
+</body>
+</html>

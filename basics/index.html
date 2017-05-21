@@ -55,59 +55,61 @@
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
 	<ul class="current">
+	  
           
-            <li>
-    <li class="toctree-l1 ">
-        <a class="" href="..">Home</a>
-        
-    </li>
-<li>
+            <li class="toctree-l1">
+		
+    <a class="" href="..">Home</a>
+	    </li>
           
-            <li>
-    <li class="toctree-l1 ">
-        <a class="" href="../core/">Core</a>
-        
-    </li>
-<li>
+            <li class="toctree-l1">
+		
+    <a class="" href="../core/">Core</a>
+	    </li>
           
-            <li>
-    <li class="toctree-l1 current">
-        <a class="current" href="./">Basics</a>
-        
-            <ul>
+            <li class="toctree-l1 current">
+		
+    <a class="current" href="./">Basics</a>
+    <ul class="subnav">
             
-                <li class="toctree-l3"><a href="#java-core-basics">Java Core Basics</a></li>
-                
-                    <li><a class="toctree-l4" href="#interfaces">Interfaces</a></li>
-                
-                    <li><a class="toctree-l4" href="#optional">Optional</a></li>
-                
-            
-            </ul>
+    <li class="toctree-l2"><a href="#java-core-basics">Java Core Basics</a></li>
+    
+        <ul>
         
-    </li>
-<li>
+            <li><a class="toctree-l3" href="#interfaces">Interfaces</a></li>
+        
+            <li><a class="toctree-l3" href="#how-you-could-combine-old-and-new">How you could combine old and new</a></li>
+        
+        </ul>
+    
+
+    </ul>
+	    </li>
           
-            <li>
-    <li class="toctree-l1 ">
-        <a class="" href="../functional/">Functional</a>
-        
-    </li>
-<li>
+            <li class="toctree-l1">
+		
+    <a class="" href="../functional/">Functional</a>
+	    </li>
           
-            <li>
-    <li class="toctree-l1 ">
-        <a class="" href="../pattern/">Pattern</a>
-        
-    </li>
-<li>
+            <li class="toctree-l1">
+		
+    <a class="" href="../functional_result/">Memoizing</a>
+	    </li>
           
-            <li>
-    <li class="toctree-l1 ">
-        <a class="" href="../reactive/">Reactive</a>
-        
-    </li>
-<li>
+            <li class="toctree-l1">
+		
+    <a class="" href="../functional_memoizing/">Memoizing</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../pattern/">Pattern</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../reactive/">Reactive</a>
+	    </li>
           
         </ul>
       </div>
@@ -145,15 +147,91 @@
             <div class="section">
               
                 <h2 id="java-core-basics">Java Core Basics<a class="headerlink" href="#java-core-basics" title="Permanent link">&para;</a></h2>
+<p>If you start with the functional way of coding, you will start 
+searching for the best place to define the functions.
+How to create them and some other practical things.
+Here I will describe the way I would do it.. And what kind of language 
+features I am using for this.</p>
 <h3 id="interfaces">Interfaces<a class="headerlink" href="#interfaces" title="Permanent link">&para;</a></h3>
+<p>Interfaces are a good point to start with stateless code pieces.
+But lets start with the Java8 features we got and we could use.</p>
 <h4 id="inheritance-and-default-implementations">Inheritance and default implementations<a class="headerlink" href="#inheritance-and-default-implementations" title="Permanent link">&para;</a></h4>
+<p>Since Java8 we have default implementations. This is good to define 
+Interfaces with more than one method, but providing for n-1 methods an
+implementation. So we got a Functional Interface and we could use now Lambdas with this.
+But I don´t want to go too deep into the details. There is a lot of good documentation 
+available on the market. </p>
 <h4 id="public-static-methods">public static methods<a class="headerlink" href="#public-static-methods" title="Permanent link">&para;</a></h4>
+<p>Here we could start now with the functional aspects. Ok not with the functional aspects 
+itself, but with the way to create instances of functions.</p>
+<p>Let´s see why.
+If we are defining Functions, we have to type them.</p>
+<pre><code class="java">Function&lt;String, String&gt; func = (str) -&gt; str + &quot;-something usefull&quot;;
+</code></pre>
+
+<p>Now we could use this, but how we could define Functions with Generics?
+We start now with the task, how to convert a Enumeration into a Stream, 
+or more precise, an Enumeration<T> to a Stream<T>?</p>
+<p>For this we need a Function like the follwing.</p>
+<pre><code class="java">Function&lt;Enumeration&lt;T&gt;, Stream&lt;T&gt;&gt; convert = (T t) -&gt; ....
+</code></pre>
+
+<p>But this you are not able to do. So for this we need a Method that will create an instance of an 
+function. And for this, we should use static methods in interfaces.</p>
+<pre><code class="java">  static &lt;T&gt; Function&lt;Enumeration&lt;T&gt;, Stream&lt;T&gt;&gt; enumToStream() {
+    return (e) -&gt;
+        StreamSupport
+            .stream(Spliterators.spliteratorUnknownSize(new Iterator&lt;T&gt;() {
+              public T next() {
+                return e.nextElement();
+              }
+
+              public boolean hasNext() {
+                return e.hasMoreElements();
+              }
+            }, Spliterator.ORDERED), false);
+  }
+</code></pre>
+
 <h4 id="public-static-attributes">public static attributes<a class="headerlink" href="#public-static-attributes" title="Permanent link">&para;</a></h4>
+<p>Yes, you could define static attibutes in interfaces. But it is a good advise 
+to use them only for things that are not changing. Maybe a const String, 
+or a defined NULL-Object for a specific class you have to deal with.</p>
 <h4 id="java9-jep213-private-methods-in-interfaces">Java9 JEP213 - private methods in interfaces<a class="headerlink" href="#java9-jep213-private-methods-in-interfaces" title="Permanent link">&para;</a></h4>
-<h4 id="difference-between-class-and-lambda">Difference between class and Lambda<a class="headerlink" href="#difference-between-class-and-lambda" title="Permanent link">&para;</a></h4>
-<h3 id="optional">Optional<T><a class="headerlink" href="#optional" title="Permanent link">&para;</a></h3>
-<h4 id="how-to-use-it">How to use it<a class="headerlink" href="#how-to-use-it" title="Permanent link">&para;</a></h4>
-<h4 id="update-with-java9">update with Java9<a class="headerlink" href="#update-with-java9" title="Permanent link">&para;</a></h4>
+<h3 id="how-you-could-combine-old-and-new">How you could combine old and new<a class="headerlink" href="#how-you-could-combine-old-and-new" title="Permanent link">&para;</a></h3>
+<p>In jab´a we have different ways to connect to the old Java World.
+Here I want to describe a way, that not so often is used or 
+maybe known by the developers.</p>
+<p>Let´s say we have a LegacyService and it is not allowed to change anything. 
+(or maybe it is a third party lib and you can not change anything)</p>
+<p>From an instance of this LegacyService you could grap a Methodreference.</p>
+<pre><code class="java">final BiFunction&lt;String, Integer, String&gt; myFunction = legacyService::doWork;
+</code></pre>
+
+<p>Oh, what is this? No cast? Yes, no explicit cast.. And LegacyService is 
+not implementing the Interface BiFunction. But....</p>
+<p>What we are using here, is the mechanism "invoke dynamic". What must fit, is the 
+amount and type of params and return type. If this match, you could do it. 
+And it is not limited to the Functional Interfaces from the JDK. So if you have a
+legacy method with four params, create a QuadFunction. And have in mind, 
+return type could be Void.</p>
+<pre><code class="java">  public class LegacyService {
+    public String doWork(String str, Integer integer) {
+      return &quot;legacy-&quot; + str + &quot; - &quot; + integer;
+    }
+  }
+
+  public static void main(String[] args) {
+    final LegacyService legacyService = new LegacyService();
+    final BiFunction&lt;String, Integer, String&gt; myFunction = legacyService::doWork;
+    final Function&lt;String, String&gt; function = input -&gt; &quot;nextFunction - &quot; + input;
+    final BiFunction&lt;String, Integer, String&gt; andThen = myFunction.andThen(function);
+    String hello = andThen.apply(&quot;Hello&quot;, 42);
+    System.out.println(&quot;hello = &quot; + hello);
+  }
+</code></pre>
+
+<p>Now we could combine legacy code with new functions.</p>
               
             </div>
           </div>
@@ -189,7 +267,7 @@
   <div class="rst-versions" role="note" style="cursor: pointer">
     <span class="rst-current-version" data-toggle="rst-current-version">
       
-          <a href="https://github.com/functional-reactive/functional-reactive.github.io.git" class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
+          <a href="https://github.com/functional-reactive/functional-reactive.github.io.git" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
       
       
         <span><a href="../core/" style="color: #fcfcfc;">&laquo; Previous</a></span>
