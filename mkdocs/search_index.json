@@ -92,17 +92,17 @@
         }, 
         {
             "location": "/functional_result/", 
-            "text": "Functional - Result the tuned Optional\n\n\nOptional\n\n\nHow to use it\n\n\nupdate with Java9\n\n\nResult", 
+            "text": "Functional - Result, the tuned Optional\n\n\nif we wantb to avoid exceptions and never wantb to give back null, we have to find a solution.\nOne could be the bevaviort to use collections for every result.\nBut this ist def. not what we want. ;-) But if we reduce the collection \nto one element, we are on the road to the Null-Object. \nAfter 7 versions of Java, we got the Optional...\n\n\nOptional\n\n\nThe Optional is a class that is working as a holder for a typed value.\nSo we are able to ask to instance of the Optional if a Value is Present, of \nhow to get an alternative result.\n\n\nHow to use it\n\n\nupdate with Java9\n\n\nWith Java 9 we got a few extensions to this class.\nFor example, something like a flat map or better, \nconvert to a Stream. Even with no value you could \navoid the typical cycle in a stream of filter(isPresent) \nin combination of map(optional.get())\n\n\nResult\n\n\nThe Optional is a good thing so far, and it is part of the JDK.\nBut it is a final class. So, any extensions that you would \nlike to add depending on your project needs.. forget it ;-)\n\n\nSame happened to me so I introduced the class Result. \nResult is a tuned Optional, and it is not defined final.\n\n\nThe result could be saked ifPresent or ifAbsent, so noo need to invert yourself.\n\n\nTo work with the value, there are the methods\n\n\nget() or getOrElse(..) to get the value, or you could define a Consumer and use it\nwith the method ifPresent(consumer)\n\n\nTo create an instance of Result with a value ( even if it is null), there is the method \nofNullable(value). \n\n\nTo Combine a Result with an other value and a function that is dealing with both input values,\nthere is the possiblity to add a BiFunction with the method thenCombine. Or use the method thenCombineAsync\nif yoiu want to go reactive.\n\n\n    Result\nString\n hello = Result.success(\nHello\n);\n    Result\nString\n world = hello.thenCombine(\nWorld\n, (s, s2) -\n Result.success(s + \n - \n + s2));\n    Assert.assertEquals(\nHello - World\n, world.get());", 
             "title": "Memoizing"
         }, 
         {
             "location": "/functional_result/#functional-result-the-tuned-optional", 
-            "text": "", 
-            "title": "Functional - Result the tuned Optional"
+            "text": "if we wantb to avoid exceptions and never wantb to give back null, we have to find a solution.\nOne could be the bevaviort to use collections for every result.\nBut this ist def. not what we want. ;-) But if we reduce the collection \nto one element, we are on the road to the Null-Object. \nAfter 7 versions of Java, we got the Optional...", 
+            "title": "Functional - Result, the tuned Optional"
         }, 
         {
             "location": "/functional_result/#optional", 
-            "text": "", 
+            "text": "The Optional is a class that is working as a holder for a typed value.\nSo we are able to ask to instance of the Optional if a Value is Present, of \nhow to get an alternative result.", 
             "title": "Optional"
         }, 
         {
@@ -112,12 +112,12 @@
         }, 
         {
             "location": "/functional_result/#update-with-java9", 
-            "text": "", 
+            "text": "With Java 9 we got a few extensions to this class.\nFor example, something like a flat map or better, \nconvert to a Stream. Even with no value you could \navoid the typical cycle in a stream of filter(isPresent) \nin combination of map(optional.get())", 
             "title": "update with Java9"
         }, 
         {
             "location": "/functional_result/#result", 
-            "text": "", 
+            "text": "The Optional is a good thing so far, and it is part of the JDK.\nBut it is a final class. So, any extensions that you would \nlike to add depending on your project needs.. forget it ;-)  Same happened to me so I introduced the class Result. \nResult is a tuned Optional, and it is not defined final.  The result could be saked ifPresent or ifAbsent, so noo need to invert yourself.  To work with the value, there are the methods  get() or getOrElse(..) to get the value, or you could define a Consumer and use it\nwith the method ifPresent(consumer)  To create an instance of Result with a value ( even if it is null), there is the method \nofNullable(value).   To Combine a Result with an other value and a function that is dealing with both input values,\nthere is the possiblity to add a BiFunction with the method thenCombine. Or use the method thenCombineAsync\nif yoiu want to go reactive.      Result String  hello = Result.success( Hello );\n    Result String  world = hello.thenCombine( World , (s, s2) -  Result.success(s +   -   + s2));\n    Assert.assertEquals( Hello - World , world.get());", 
             "title": "Result"
         }, 
         {
