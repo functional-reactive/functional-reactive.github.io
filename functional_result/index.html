@@ -82,7 +82,7 @@
     <a class="current" href="./">Memoizing</a>
     <ul class="subnav">
             
-    <li class="toctree-l2"><a href="#functional-result-the-tuned-optional">Functional - Result the tuned Optional</a></li>
+    <li class="toctree-l2"><a href="#functional-result-the-tuned-optional">Functional - Result, the tuned Optional</a></li>
     
         <ul>
         
@@ -146,11 +146,42 @@
           <div role="main">
             <div class="section">
               
-                <h2 id="functional-result-the-tuned-optional">Functional - Result the tuned Optional<a class="headerlink" href="#functional-result-the-tuned-optional" title="Permanent link">&para;</a></h2>
+                <h2 id="functional-result-the-tuned-optional">Functional - Result, the tuned Optional<a class="headerlink" href="#functional-result-the-tuned-optional" title="Permanent link">&para;</a></h2>
+<p>if we wantb to avoid exceptions and never wantb to give back null, we have to find a solution.
+One could be the bevaviort to use collections for every result.
+But this ist def. not what we want. ;-) But if we reduce the collection 
+to one element, we are on the road to the Null-Object. 
+After 7 versions of Java, we got the Optional...</p>
 <h3 id="optional">Optional<a class="headerlink" href="#optional" title="Permanent link">&para;</a></h3>
+<p>The Optional is a class that is working as a holder for a typed value.
+So we are able to ask to instance of the Optional if a Value is Present, of 
+how to get an alternative result.</p>
 <h4 id="how-to-use-it">How to use it<a class="headerlink" href="#how-to-use-it" title="Permanent link">&para;</a></h4>
 <h4 id="update-with-java9">update with Java9<a class="headerlink" href="#update-with-java9" title="Permanent link">&para;</a></h4>
+<p>With Java 9 we got a few extensions to this class.
+For example, something like a flat map or better, 
+convert to a Stream. Even with no value you could 
+avoid the typical cycle in a stream of filter(isPresent) 
+in combination of map(optional.get())</p>
 <h3 id="result">Result<a class="headerlink" href="#result" title="Permanent link">&para;</a></h3>
+<p>The Optional is a good thing so far, and it is part of the JDK.
+But it is a final class. So, any extensions that you would 
+like to add depending on your project needs.. forget it ;-)</p>
+<p>Same happened to me so I introduced the class Result. 
+Result is a tuned Optional, and it is not defined final.</p>
+<p>The result could be saked ifPresent or ifAbsent, so noo need to invert yourself.</p>
+<p>To work with the value, there are the methods</p>
+<p>get() or getOrElse(..) to get the value, or you could define a Consumer and use it
+with the method ifPresent(consumer)</p>
+<p>To create an instance of Result with a value ( even if it is null), there is the method 
+ofNullable(value). </p>
+<p>To Combine a Result with an other value and a function that is dealing with both input values,
+there is the possiblity to add a BiFunction with the method thenCombine. Or use the method thenCombineAsync
+if yoiu want to go reactive.</p>
+<pre><code class="java">    Result&lt;String&gt; hello = Result.success(&quot;Hello&quot;);
+    Result&lt;String&gt; world = hello.thenCombine(&quot;World&quot;, (s, s2) -&gt; Result.success(s + &quot; - &quot; + s2));
+    Assert.assertEquals(&quot;Hello - World&quot;, world.get());
+</code></pre>
               
             </div>
           </div>
